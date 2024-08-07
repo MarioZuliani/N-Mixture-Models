@@ -1,0 +1,223 @@
+---
+title: "N-Mixture Model"
+author: "Mario Zuliani"
+date: "2024-08-01"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Try with 2022 plot data
+```{r}
+# Number of sites and maximum number of microsites
+library(unmarked)
+plot_2022 <- read.csv("plot_2022.csv")
+n_sites <- length(unique(plot_2022$site_code)) ### Sets the length based on number of sites (6)
+n_microsites <- max(plot_2022$microsite_number) ### Sets the max number of microsites there could possibly be (Max 4)
+
+# Prepare counts matrix
+counts_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites) ### Splits animal observations by site and by microsite
+shrub_density_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites) ### Splits shrub density by site and microsite
+mean_temp_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites) ### Splits mean temp by site and microsite
+
+# Fill in the matrices
+for (i in 1:n_sites) {
+  site_data <- subset(plot_2022, site_code == unique(plot_2022$site_code)[i])
+  counts_matrix[i, 1:nrow(site_data)] <- site_data$animals
+  shrub_density_matrix[i, 1:nrow(site_data)] <- site_data$shrub_density
+  mean_temp_matrix[i, 1:nrow(site_data)] <- site_data$mean_temp
+}
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  obsCovs = list(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  )
+)
+unmarked_2022
+
+# Fit the N-mixture model
+fit <- pcount(~ shrub_density + mean_temp ~ 1, data = unmarked_2022)
+
+# View the model summary
+summary(fit)
+
+### Note for the K value the package recommends doing +100 the max observation, hence why it is using 801
+### Significant p-values indicate that the factors influence detection probability of animals in the survey sites.
+```
+
+### Try for 2022 Plot Level Data
+```{r}
+library(unmarked)
+
+# Assuming your new dataframe is called 'species_data_2022'
+species_data_2022 <- read.csv("N_Mixture_2022.csv")
+
+# Get unique combinations of site_code and species
+site_species_combos <- unique(species_data_2022[c("site_code", "common_name")])
+n_site_species <- nrow(site_species_combos)
+
+n_microsites <- max(species_data_2022$microsite_number)
+
+# Prepare matrices
+counts_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+shrub_density_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+mean_temp_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+
+# Fill in the matrices
+for (i in 1:n_site_species) {
+  site <- site_species_combos$site_code[i]
+  species <- site_species_combos$common_name[i]
+  
+  site_species_data <- subset(species_data_2022,site_code == site & common_name == species)
+  
+  counts_matrix[i, 1:nrow(site_species_data)] <- site_species_data$captures
+  shrub_density_matrix[i, 1:nrow(site_species_data)] <- site_species_data$shrub_density
+  mean_temp_matrix[i, 1:nrow(site_species_data)] <- site_species_data$mean_temp
+}
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  obsCovs = list(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  ),
+  siteCovs = data.frame(
+    site = site_species_combos$site_code,
+    species = site_species_combos$common_name
+  )
+)
+unmarked_2022
+# Fit the N-mixture model
+fit <- pcount(~ shrub_density + mean_temp ~ species, data = unmarked_2022)
+
+# View the model summary
+summary(fit)
+
+```
+### Figure for above code
+```{r}
+### Density v detection (all animals)
+
+# Get the detection coefficients from the model
+det_coef <- coef(fit, type = "det")
+
+# Print names of coefficients
+names(det_coef)
+
+intercept_coef <- det_coef["p(Int)"]
+shrub_density_coef <- det_coef["p(shrub_density)"]
+
+# Generate density values for prediction
+density_values <- seq(min(species_data_2022$shrub_density, na.rm = TRUE),
+                      max(species_data_2022$shrub_density, na.rm = TRUE), length.out = 100)
+
+# Calculate detection probability
+detection_prob <- exp(intercept_coef + shrub_density_coef * density_values) / 
+                  (1 + exp(intercept_coef + shrub_density_coef * density_values))
+
+
+# Store the predictions in a data frame
+pred_df <- data.frame(
+  Shrub_Density = density_values,
+  Detection_Probability = detection_prob
+)
+
+# Create the plot
+#ggplot(pred_df, aes(x = Shrub_Density, y = Detection_Probability)) +
+ # geom_line(color = "blue") +
+  #labs(x = "Shrub Density", y = "Detection Probability", title = "Detection Probability vs. Shrub Density") +
+  #theme_classic()
+```
+
+# August 7th 2024
+### Site Level
+```{r}
+# Load necessary library
+library(unmarked)
+
+# Load your data
+plot_2022 <- read.csv("plot_2022.csv")
+
+# Number of sites and maximum number of microsites
+n_sites <- length(unique(plot_2022$site_code))  # Number of unique sites
+n_microsites <- max(plot_2022$microsite_number)  # Maximum number of microsites per site
+
+# Prepare counts matrix
+counts_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites)
+
+# Prepare site covariates data frame
+site_covs <- data.frame(
+  site_code = unique(plot_2022$site_code),
+  shrub_density = numeric(n_sites),
+  mean_temp = numeric(n_sites)
+)
+
+# Fill in the matrices
+for (i in 1:n_sites) {
+  site_data <- subset(plot_2022, site_code == unique(plot_2022$site_code)[i])
+  counts_matrix[i, 1:nrow(site_data)] <- site_data$animals
+  site_covs$shrub_density[i] <- sum(site_data$shrub_density)  # Use mean shrub_density for the site
+  site_covs$mean_temp[i] <- mean(site_data$mean_temp)  # Use mean temperature for the site
+}
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  siteCovs = site_covs
+)
+unmarked_2022
+
+# Fit the N-mixture model with both covariates in abundance (First set) and detection components (Second set)
+fit <- pcount(~ shrub_density + mean_temp ~ shrub_density + mean_temp, data = unmarked_2022)
+
+# View the model summary
+summary(fit)
+
+
+```
+### Plot Level
+```{r}
+# Load necessary library
+
+library(unmarked)
+
+# Load your data
+plot_2022 <- read.csv("plot_2022.csv")
+# Check for missing values in your data
+sum(is.na(plot_2022$animals))
+sum(is.na(plot_2022$shrub_density))
+sum(is.na(plot_2022$mean_temp))
+
+# Remove rows with missing values (if any)
+plot_2022 <- na.omit(plot_2022)
+
+
+# Prepare counts matrix
+counts_matrix <- matrix(plot_2022$animals, ncol = 1)
+
+# Prepare plot covariates data frame (siteCovs)
+plot_covs <- plot_2022[, c("shrub_density", "mean_temp")]
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  siteCovs = plot_covs
+)
+unmarked_2022
+
+# Fit the N-mixture model
+fit <- pcount(~ shrub_density ~ shrub_density + mean_temp, data = unmarked_2022)
+
+# View the model summary
+summary(fit)
+
+```
+
+
+
