@@ -1,0 +1,398 @@
+---
+title: ''
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+### plot data
+```{r}
+library(unmarked)
+library(tidyverse)
+plot_2022 <- read.csv("plot_2022.csv") %>% 
+  mutate(plot = row_number())
+
+# Number of sites and maximum number of microsites
+n_sites <- length(unique(plot_2022$site_code)) ### Sets the length based on number of sites (6)
+n_microsites <- length(plot_2022$plot) ### set to 24
+
+# Prepare counts matrix
+counts_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites) ### Splits animal observations by site and by microsite
+shrub_density_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites) ### Splits shrub density by site and microsite
+mean_temp_matrix <- matrix(NA, nrow = n_sites, ncol = n_microsites) ### Splits mean temp by site and microsite
+
+# Fill in the matrices
+for (i in 1:n_sites) {
+  site_data <- subset(plot_2022, site_code == unique(plot_2022$site_code)[i])
+  counts_matrix[i, 1:nrow(site_data)] <- site_data$animals
+  shrub_density_matrix[i, 1:nrow(site_data)] <- site_data$shrub_density
+  mean_temp_matrix[i, 1:nrow(site_data)] <- site_data$mean_temp
+}
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  obsCovs = list(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  )
+)
+unmarked_2022
+
+summary(unmarked_2022)
+
+# Fit the N-mixture model
+#fit = ~ detection formula ~ occupancy formula.
+# fit = ~ detection will be returned ~ abundance will be returned 
+# fit = if you set ~1 it assumed constant to either spot
+#fit <- pcount(~ shrub_density + mean_temp ~ 1, data = unmarked_2022) #full model
+fit <- pcount(~ shrub_density ~ 1, data = unmarked_2022) #just get detection probability only
+
+# View the model summary
+summary(fit)
+
+
+# Get the detection coefficients from the model
+det_coef <- coef(fit, type = "det")
+
+# Print names of coefficients
+names(det_coef)
+
+intercept_coef <- det_coef["p(Int)"]
+intercept_coef
+shrub_density_coef <- det_coef["p(shrub_density)"]
+shrub_density_coef
+
+# Generate density values for prediction
+density_values <- seq(min(plot_2022$shrub_density, na.rm = TRUE),
+                      max(plot_2022$shrub_density, na.rm = TRUE), length.out = 14)
+density_values
+
+# Calculate detection probability
+detection_prob <- exp(intercept_coef + shrub_density_coef * density_values) /
+                  (1 + exp(intercept_coef + shrub_density_coef * density_values))
+detection_prob
+
+# Store the predictions in a data frame
+pred_df <- data.frame(
+  Shrub_Density = density_values,
+  Detection_Probability = detection_prob
+)
+pred_df
+
+# Create the plot
+ggplot(pred_df, aes(x = Shrub_Density, y = Detection_Probability)) +
+  geom_smooth(method = "lm", formula = y ~ poly(x, 2), se= TRUE) +
+  labs(x = "Shrub Density", y = "Detection Probability", title = "Detection Probability vs. Shrub Density") +
+  theme_classic()
+
+```
+
+### species data
+```{r}
+# Load necessary libraries
+library(unmarked)
+library(ggplot2)
+
+# Assuming your new dataframe is called 'species_data_2022'
+species_data_2022 <- read.csv("N_Mixture_2022.csv")
+
+# Get unique combinations of site_code and species
+site_species_combos <- unique(species_data_2022[c("site_code", "common_name")])
+n_site_species <- nrow(site_species_combos)
+
+n_microsites <- max(species_data_2022$microsite_number)
+
+# Prepare matrices
+counts_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+shrub_density_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+mean_temp_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+
+# Fill in the matrices
+for (i in 1:n_site_species) {
+  site <- site_species_combos$site_code[i]
+  species <- site_species_combos$common_name[i]
+  
+  site_species_data <- subset(species_data_2022, site_code == site & common_name == species)
+  
+  counts_matrix[i, 1:nrow(site_species_data)] <- site_species_data$captures
+  shrub_density_matrix[i, 1:nrow(site_species_data)] <- site_species_data$shrub_density
+  mean_temp_matrix[i, 1:nrow(site_species_data)] <- site_species_data$mean_temp
+}
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  obsCovs = list(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  ),
+  siteCovs = data.frame(
+    site = site_species_combos$site_code,
+    species = site_species_combos$common_name
+  )
+)
+
+# Fit the N-mixture model (Detection probability only)
+fit <- pcount(~ species ~ 1, data = unmarked_2022)
+
+# View the model summary
+summary(fit)
+
+# Get the detection coefficients from the model
+det_coef <- coef(fit, type = "det")
+
+# Generate density values for prediction
+species_levels <- unique(species_data_2022$common_name)
+
+# Calculate detection probability for each species
+pred_df <- data.frame(
+  species = character(),
+  Detection_Probability = numeric()
+)
+
+for (sp in species_levels) {
+  species_coef <- det_coef[paste0("p(species", sp, ")")]
+  detection_prob <- exp(det_coef["p(Int)"] + species_coef) / (1 + exp(det_coef["p(Int)"] + species_coef))
+  pred_df <- rbind(pred_df, data.frame(species = sp, Detection_Probability = detection_prob))
+}
+
+pred_df
+
+# Create the plot
+ggplot(pred_df, aes(x = species, y = Detection_Probability)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Detection Probability by Species",
+       x = "Species",
+       y = "Detection Probability") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+```
+
+## Working Plot Data 2022
+```{r}
+library(unmarked)
+plot_2022 <- read.csv("plot_2022.csv")
+# Number of rows in your dataset
+n_rows <- nrow(plot_2022)
+
+# Prepare counts matrix
+counts_matrix <- matrix(plot_2022$animals, nrow = n_rows, byrow = TRUE)
+counts_matrix
+
+# Prepare covariate matrices
+shrub_density_matrix <- matrix(plot_2022$shrub_density, nrow = n_rows, byrow = TRUE)
+shrub_density_matrix
+mean_temp_matrix <- matrix(plot_2022$mean_temp, nrow = n_rows, byrow = TRUE)
+mean_temp_matrix
+
+# Create unmarked frame
+unmarked_2022 <- unmarkedFramePCount(
+  y = counts_matrix,
+  siteCovs = data.frame(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  )
+)
+unmarked_2022
+# Fit the N-mixture model
+fit <- pcount(~ shrub_density ~shrub_density + mean_temp, data = unmarked_2022)
+
+# View the model summary
+summary(fit)
+
+# Get the detection coefficients from the model
+det_coef <- coef(fit, type = "det")
+
+# Print names of coefficients
+names(det_coef)
+
+intercept_coef <- det_coef["p(Int)"]
+intercept_coef
+shrub_density_coef <- det_coef["p(shrub_density)"]
+shrub_density_coef
+
+# Generate shrub density values for prediction
+density_values <- seq(min(plot_2022$shrub_density, na.rm = TRUE),
+                      max(plot_2022$shrub_density, na.rm = TRUE), length.out = 14)
+density_values
+
+# Calculate detection probability
+detection_prob <- exp(intercept_coef + shrub_density_coef * density_values) /
+                  (1 + exp(intercept_coef + shrub_density_coef * density_values))
+detection_prob
+
+# Store the predictions in a data frame
+pred_df <- data.frame(
+  Shrub_Density = density_values,
+  Detection_Probability = detection_prob
+)
+pred_df
+
+# Create the plot
+PLOT <- ggplot(pred_df, aes(x = Shrub_Density, y = Detection_Probability)) +
+  geom_point() +
+  geom_smooth(method = "loess", span = 0.5, se= FALSE) +
+  labs(x = "Shrub Density", y = "Detection Probability") +
+  theme_classic()
+PLOT
+
+```
+
+### PLot 2023
+```{r}
+library(unmarked)
+plot_2023 <- read.csv("plot_2023.csv")
+# Number of rows in your dataset
+n_rows <- nrow(plot_2023)
+
+# Prepare counts matrix
+counts_matrix <- matrix(plot_2023$animals, nrow = n_rows, byrow = TRUE)
+counts_matrix
+
+# Prepare covariate matrices
+shrub_density_matrix <- matrix(plot_2023$shrub_density, nrow = n_rows, byrow = TRUE)
+shrub_density_matrix
+mean_temp_matrix <- matrix(plot_2023$mean_temp, nrow = n_rows, byrow = TRUE)
+mean_temp_matrix
+
+# Create unmarked frame
+unmarked_2023 <- unmarkedFramePCount(
+  y = counts_matrix,
+  siteCovs = data.frame(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  )
+)
+unmarked_2023
+# Fit the N-mixture model
+fit <- pcount(~ shrub_density ~shrub_density + mean_temp, data = unmarked_2023)
+
+# View the model summary
+summary(fit)
+
+# Get the detection coefficients from the model
+det_coef <- coef(fit, type = "det")
+
+# Print names of coefficients
+names(det_coef)
+
+intercept_coef <- det_coef["p(Int)"]
+intercept_coef
+shrub_density_coef <- det_coef["p(shrub_density)"]
+shrub_density_coef
+
+# Generate shrub density values for prediction
+density_values <- seq(min(plot_2023$shrub_density, na.rm = TRUE),
+                      max(plot_2023$shrub_density, na.rm = TRUE), length.out = 14)
+density_values
+
+# Calculate detection probability
+detection_prob <- exp(intercept_coef + shrub_density_coef * density_values) /
+                  (1 + exp(intercept_coef + shrub_density_coef * density_values))
+detection_prob
+
+# Store the predictions in a data frame
+pred_df <- data.frame(
+  Shrub_Density = density_values,
+  Detection_Probability = detection_prob
+)
+pred_df
+
+# Create the plot
+PLOT <- ggplot(pred_df, aes(x = Shrub_Density, y = Detection_Probability)) +
+  geom_point() +
+  geom_smooth(method = "loess", span = 0.5, se= FALSE) +
+  labs(x = "Shrub Density", y = "Detection Probability") +
+  theme_classic()
+PLOT
+```
+### Species level 2023
+```{r}
+# Load necessary libraries
+library(unmarked)
+library(ggplot2)
+
+# Assuming your new dataframe is called 'species_data_2022'
+species_data_2023 <- read.csv("N_Mixture_2023.csv")
+
+# Get unique combinations of site_code and species
+site_species_combos <- unique(species_data_2023[c("site_code", "common_name")])
+site_species_combos
+n_site_species <- nrow(site_species_combos)
+n_site_species
+
+n_microsites <- max(species_data_2023$plot)
+n_microsites 
+
+# Prepare matrices
+counts_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+shrub_density_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+mean_temp_matrix <- matrix(NA, nrow = n_site_species, ncol = n_microsites)
+
+# Fill in the matrices
+for (i in 1:n_site_species) {
+  site <- site_species_combos$site_code[i]
+  species <- site_species_combos$common_name[i]
+  
+  site_species_data <- subset(species_data_2023, site_code == site & common_name == species)
+  
+  counts_matrix[i, 1:nrow(site_species_data)] <- site_species_data$captures
+  shrub_density_matrix[i, 1:nrow(site_species_data)] <- site_species_data$shrub_density
+  mean_temp_matrix[i, 1:nrow(site_species_data)] <- site_species_data$mean_temp
+}
+
+# Create unmarked frame
+unmarked_2023 <- unmarkedFramePCount(
+  y = counts_matrix,
+  obsCovs = list(
+    shrub_density = shrub_density_matrix,
+    mean_temp = mean_temp_matrix
+  ),
+  siteCovs = data.frame(
+    site = site_species_combos$site_code,
+    species = site_species_combos$common_name
+  )
+)
+
+# Fit the N-mixture model (Detection probability only)
+fit <- pcount(~ species ~ 1, data = unmarked_2023)
+
+# View the model summary
+summary(fit)
+
+# Get the detection coefficients from the model
+det_coef <- coef(fit, type = "det")
+
+# Generate density values for prediction
+species_levels <- unique(species_data_2023$common_name)
+
+# Calculate detection probability for each species
+pred_df <- data.frame(
+  species = character(),
+  Detection_Probability = numeric()
+)
+
+for (sp in species_levels) {
+  species_coef <- det_coef[paste0("p(species", sp, ")")]
+  detection_prob <- exp(det_coef["p(Int)"] + species_coef) / (1 + exp(det_coef["p(Int)"] + species_coef))
+  pred_df <- rbind(pred_df, data.frame(species = sp, Detection_Probability = detection_prob))
+}
+
+pred_df
+
+# Create the plot
+ggplot(pred_df, aes(x = species, y = Detection_Probability)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Detection Probability by Species",
+       x = "Species",
+       y = "Detection Probability") + theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+
+```
+

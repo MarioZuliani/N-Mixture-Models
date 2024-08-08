@@ -1,0 +1,103 @@
+,site_code,microsite,plot,shrub_density,common_name,captures,mean_temp
+17,Carrizo_3,Open,2,0,Black-tailed Jackrabbit,3,24.02083333
+21,Carrizo_4,Density,1,11,Black-tailed Jackrabbit,8,23.1265713
+25,Carrizo_4,Density,2,10,Black-tailed Jackrabbit,10,23.1265713
+30,Carrizo_4,Open,1,0,Black-tailed Jackrabbit,1,24.02083333
+36,Carrizo_4,Open,2,0,Black-tailed Jackrabbit,1,24.02083333
+41,Cuyama_1,Density,1,14,Black-tailed Jackrabbit,11,23.08210689
+48,Cuyama_1,Density,2,13,Black-tailed Jackrabbit,1,23.08210689
+51,Cuyama_1,Open,1,0,Black-tailed Jackrabbit,2,22.41798533
+59,Cuyama_2,Density,1,11,Black-tailed Jackrabbit,16,22.49745331
+64,Cuyama_2,Density,2,11,Black-tailed Jackrabbit,2,21.49574633
+69,Tecopa_Open,Open,1,0,Black-tailed Jackrabbit,2,27.86905762
+73,Tecopa_Open,Open,2,0,Black-tailed Jackrabbit,1,25.60490597
+80,Tecopa_Open,Open,4,0,Black-tailed Jackrabbit,2,27.0152075
+83,Tecopa_Shrub,Density,1,10,Black-tailed Jackrabbit,27,26.84472449
+91,Tecopa_Shrub,Density,2,11,Black-tailed Jackrabbit,26,26.25903367
+99,Tecopa_Shrub,Density,3,11,Black-tailed Jackrabbit,11,26.6032543
+103,Tecopa_Shrub,Density,4,10,Black-tailed Jackrabbit,2,26.70606297
+84,Tecopa_Shrub,Density,1,10,Black-throated Sparrow,1,26.84472449
+1,Carrizo_3,Density,1,11,Blunt-nosed Leopard Lizard,1,19.95887237
+42,Cuyama_1,Density,1,14,Brewer's Blackbird,3,23.08210689
+52,Cuyama_1,Open,1,0,Brewer's Blackbird,1,22.41798533
+60,Cuyama_2,Density,1,11,Brewer's Blackbird,1,22.49745331
+9,Carrizo_3,Density,2,12,California Ground Squirrel,1,21.01538
+43,Cuyama_1,Density,1,14,California Quail,2,23.08210689
+26,Carrizo_4,Density,2,10,California Thrasher,1,23.1265713
+18,Carrizo_3,Open,2,0,Common Raven,2,24.02083333
+44,Cuyama_1,Density,1,14,Common Raven,1,23.08210689
+56,Cuyama_1,Open,2,0,Common Raven,3,22.41798533
+61,Cuyama_2,Density,1,11,Common Raven,1,22.49745331
+65,Cuyama_2,Density,2,11,Common Raven,3,21.49574633
+68,Cuyama_2,Open,1,0,Common Raven,1,22.00307692
+70,Tecopa_Open,Open,1,0,Common Raven,2,27.86905762
+74,Tecopa_Open,Open,2,0,Common Raven,5,25.60490597
+76,Tecopa_Open,Open,3,0,Common Raven,4,27.59497881
+81,Tecopa_Open,Open,4,0,Common Raven,1,27.0152075
+85,Tecopa_Shrub,Density,1,10,Common Raven,1,26.84472449
+92,Tecopa_Shrub,Density,2,11,Common Raven,1,26.25903367
+104,Tecopa_Shrub,Density,4,10,Common Raven,2,26.70606297
+22,Carrizo_4,Density,1,11,Coyote,1,23.1265713
+27,Carrizo_4,Density,2,10,Coyote,3,23.1265713
+31,Carrizo_4,Open,1,0,Coyote,2,24.02083333
+45,Cuyama_1,Density,1,14,Coyote,4,23.08210689
+53,Cuyama_1,Open,1,0,Coyote,8,22.41798533
+62,Cuyama_2,Density,1,11,Coyote,5,22.49745331
+66,Cuyama_2,Density,2,11,Coyote,4,21.49574633
+71,Tecopa_Open,Open,1,0,Coyote,3,27.86905762
+75,Tecopa_Open,Open,2,0,Coyote,4,25.60490597
+77,Tecopa_Open,Open,3,0,Coyote,3,27.59497881
+82,Tecopa_Open,Open,4,0,Coyote,2,27.0152075
+86,Tecopa_Shrub,Density,1,10,Coyote,2,26.84472449
+93,Tecopa_Shrub,Density,2,11,Coyote,4,26.25903367
+46,Cuyama_1,Density,1,14,Desert Cottontail,2,23.08210689
+49,Cuyama_1,Density,2,13,Desert Cottontail,1,23.08210689
+87,Tecopa_Shrub,Density,1,10,Desert Cottontail,1,26.84472449
+94,Tecopa_Shrub,Density,2,11,Desert Iguana,1,26.25903367
+2,Carrizo_3,Density,1,11,Giant Kangaroo Rat,5,19.95887237
+10,Carrizo_3,Density,2,12,Giant Kangaroo Rat,3,21.01538
+32,Carrizo_4,Open,1,0,Giant Kangaroo Rat,1,24.02083333
+3,Carrizo_3,Density,1,11,Heermann's Kangaroo Rat,50,19.95887237
+11,Carrizo_3,Density,2,12,Heermann's Kangaroo Rat,67,21.01538
+16,Carrizo_3,Open,1,0,Heermann's Kangaroo Rat,2,24.020833
+19,Carrizo_3,Open,2,0,Heermann's Kangaroo Rat,3,24.02083333
+23,Carrizo_4,Density,1,11,Heermann's Kangaroo Rat,7,23.1265713
+33,Carrizo_4,Open,1,0,Heermann's Kangaroo Rat,46,24.02083333
+37,Carrizo_4,Open,2,0,Heermann's Kangaroo Rat,1,24.02083333
+47,Cuyama_1,Density,1,14,Heermann's Kangaroo Rat,4,23.08210689
+50,Cuyama_1,Density,2,13,Heermann's Kangaroo Rat,5,23.08210689
+54,Cuyama_1,Open,1,0,Heermann's Kangaroo Rat,18,22.41798533
+57,Cuyama_1,Open,2,0,Heermann's Kangaroo Rat,2,22.41798533
+63,Cuyama_2,Density,1,11,Heermann's Kangaroo Rat,17,22.49745331
+88,Tecopa_Shrub,Density,1,10,Heermann's Kangaroo Rat,1,26.84472449
+95,Tecopa_Shrub,Density,2,11,Heermann's Kangaroo Rat,4,26.25903367
+100,Tecopa_Shrub,Density,3,11,Heermann's Kangaroo Rat,3,26.6032543
+105,Tecopa_Shrub,Density,4,10,Heermann's Kangaroo Rat,2,26.70606297
+4,Carrizo_3,Density,1,11,Horned Lark,3,19.95887237
+24,Carrizo_4,Density,1,11,Kit Fox,1,23.1265713
+28,Carrizo_4,Density,2,10,Kit Fox,4,23.1265713
+38,Carrizo_4,Open,2,0,Kit Fox,1,24.02083333
+96,Tecopa_Shrub,Density,2,11,Kit Fox,1,26.25903367
+5,Carrizo_3,Density,1,11,Loggerhead Shrike,1,19.95887237
+12,Carrizo_3,Density,2,12,Loggerhead Shrike,3,21.01538
+39,Carrizo_4,Open,2,0,Loggerhead Shrike,1,24.02083333
+72,Tecopa_Open,Open,1,0,Merriam's Kangaroo Rat,1,27.86905762
+78,Tecopa_Open,Open,3,0,Merriam's Kangaroo Rat,1,27.59497881
+89,Tecopa_Shrub,Density,1,10,Merriam's Kangaroo Rat,3,26.84472449
+98,Tecopa_Shrub,Density,2,11,Merriam's Kangaroo Rat,4,26.25903367
+102,Tecopa_Shrub,Density,3,11,Merriam's Kangaroo Rat,4,26.6032543
+6,Carrizo_3,Density,1,11,Nelson's Antelope Squirrel,6,19.95887237
+14,Carrizo_3,Density,2,12,Nelson's Antelope Squirrel,12,21.01538
+20,Carrizo_3,Open,2,0,Nelson's Antelope Squirrel,1,24.02083333
+29,Carrizo_4,Density,2,10,Nelson's Antelope Squirrel,4,23.1265713
+34,Carrizo_4,Open,1,0,Nelson's Antelope Squirrel,2,24.02083333
+40,Carrizo_4,Open,2,0,Nelson's Antelope Squirrel,3,24.02083333
+58,Cuyama_1,Open,2,0,Nelson's Antelope Squirrel,1,22.41798533
+15,Carrizo_3,Density,2,12,Salinas Pocket Mouse,2,21.01538
+35,Carrizo_4,Open,1,0,Salinas Pocket Mouse,1,24.02083333
+55,Cuyama_1,Open,1,0,Say's Phoebe,3,22.41798533
+67,Cuyama_2,Density,2,11,Say's Phoebe,1,21.49574633
+7,Carrizo_3,Density,1,11,Vesper Sparrow,12,19.95887237
+8,Carrizo_3,Density,1,11,Western whiptail,1,19.95887237
+79,Tecopa_Open,Open,3,0,White-tailed Antelope Squirrel,1,27.59497881
+90,Tecopa_Shrub,Density,1,10,White-tailed Antelope Squirrel,5,26.84472449
